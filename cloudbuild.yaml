@@ -1,0 +1,26 @@
+steps:
+  # Étape 1: Scan de sécurité pour vérifier que des secrets ne sont pas divulgués
+  - name: 'gcr.io/google-github-actions/secret-scanner/cmd/secret-scanner'
+    args: ['--repo-url', 'https://github.com/ant1rqs/tpgcp2.git']
+    id: 'Check secrets'
+
+  # Étape 2: Scan de sécurité pour vérifier que l'application n'inclut pas de vulnérabilités
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['container', 'analyze', 'vulnerabilities', '--project', 'tpfinal-447407']
+    id: 'Check vulnerabilities'
+
+  # Étape 3: Build du binaire
+  - name: 'golang'
+    args: ['go', 'build', '-o', 'myapp', './app.src/']
+    id: 'Build binary'
+
+  # Étape 4: Push du binaire dans Artifact Registry
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['artifacts', 'docker', 'images', 'add-tag', 'europe-west9-docker.pkg.dev/tpfinal-447407/repo-go1/myapp:latest']
+    id: 'Push to Artefact Registry'
+
+# Images à utiliser pour les étapes
+images:
+  - 'gcr.io/google-github-actions/secret-scanner/cmd/secret-scanner'
+  - 'gcr.io/cloud-builders/gcloud'
+  - 'golang'
