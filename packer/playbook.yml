@@ -1,0 +1,46 @@
+- name: Install prerequisites
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install OpsAgent
+      apt:
+        name: google-cloud-ops-agent
+        state: present
+
+    - name: Copy application binary
+      copy:
+        src: /path/to/your/binary/myapp
+        dest: /usr/local/bin/myapp
+        mode: '0755'
+
+    - name: Create systemd service file
+      copy:
+        dest: /etc/systemd/system/myapp.service
+        content: |
+          [Unit]
+          Description=My Application
+          After=network.target
+
+          [Service]
+          ExecStart=/usr/local/bin/myapp
+          Restart=always
+          User=nobody
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd and enable the service
+      systemd:
+        name: myapp
+        enabled: yes
+        state: started
+
+    - name: Copy README.md
+      copy:
+        src: /path/to/your/README.md
+        dest: /usr/share/doc/myapp/README.md
